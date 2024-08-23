@@ -242,6 +242,7 @@ pipeline {
             env.CONTAINERSCANTYPE = metadataVars.containerScanType
 
             if (env.DEPLOYMENT_TYPE == 'KUBERNETES' || env.DEPLOYMENT_TYPE == 'OPENSHIFT') {
+                    env.helmReleaseName = "${metadataVars.helmReleaseName}"
                 String kubeProperties = parseJsonString(env.JENKINS_METADATA,'kubernetes')
                 kubeVars = parseJsonArray(kubeProperties)
                 if(kubeVars['vault']){
@@ -525,6 +526,7 @@ pipeline {
               }
             }
             if (env.DEPLOYMENT_TYPE == 'KUBERNETES' || env.DEPLOYMENT_TYPE == 'OPENSHIFT') {
+
                 withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     env.helmReleaseName = "${metadataVars.helmReleaseName}"
                     sh '''
@@ -590,6 +592,7 @@ pipeline {
                          sh """ ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${metadataVars.repoName} || true && docker rm ${metadataVars.repoName} || true" """
                     }
                     if (env.DEPLOYMENT_TYPE == 'KUBERNETES' || env.DEPLOYMENT_TYPE == 'OPENSHIFT') {
+                      env.helmReleaseName = "${metadataVars.helmReleaseName}"
                       withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG')]) {
                             sh '''
                             docker run --rm  --user root -v "$KUBECONFIG":"$KUBECONFIG" -e KUBECONFIG="$KUBECONFIG" -v "$WORKSPACE":/apps -w /apps $HELM_IMAGE_VERSION uninstall "$helmReleaseName" -n "$namespace_name"
