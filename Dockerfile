@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM amazoncorretto:8-alpine
 ENV context ""
 ENV port 8020
 ADD /src/main/resources/application.properties //
